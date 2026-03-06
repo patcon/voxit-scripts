@@ -1,8 +1,19 @@
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 
-const PAD_URL =
-  "https://pad.riseup.net/p/ALIvNYwJmo_llWuLsD2U-keep/export/txt";
+export function toFetchUrl(url) {
+  const u = new URL(url);
+  if (u.hostname === "hackmd.io") {
+    // https://hackmd.io/<id>[?view|both|...] → https://hackmd.io/<id>/download
+    const id = u.pathname.replace(/^\//, "").split("/")[0];
+    return `https://hackmd.io/${id}/download`;
+  }
+  if (u.hostname.endsWith("riseup.net") && u.pathname.includes("/p/")) {
+    // https://pad.riseup.net/p/<id> → .../export/txt
+    return `${u.origin}${u.pathname.replace(/\/$/, "")}/export/txt`;
+  }
+  throw new Error(`Unsupported pad URL: ${url}`);
+}
 
 export function parseDateFromTitle(line) {
   // Matches: # Some Title - 2026/03/06
@@ -30,7 +41,10 @@ export function redactStrikethrough(text, charsPerBlock = 5) {
 }
 
 if (import.meta.main) {
-  const response = await fetch(PAD_URL);
+  const padUrl = process.argv[2];
+  if (!padUrl) throw new Error("Usage: sync-meeting-notes.js <pad-url>");
+  const fetchUrl = toFetchUrl(padUrl);
+  const response = await fetch(fetchUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch pad: ${response.status} ${response.statusText}`);
   }

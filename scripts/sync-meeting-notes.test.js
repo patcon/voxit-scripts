@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseDateFromTitle, generateFilename, redactStrikethrough, normalizeIndents } from "./sync-meeting-notes.js";
+import { parseDateFromTitle, generateFilename, redactStrikethrough, normalizeIndents, toFetchUrl } from "./sync-meeting-notes.js";
 
 describe("parseDateFromTitle", () => {
   it("extracts ISO date from a valid title", () => {
@@ -50,6 +50,27 @@ describe("redactStrikethrough", () => {
 
   it("leaves text without strikethrough unchanged", () => {
     expect(redactStrikethrough("nothing to censor")).toBe("nothing to censor");
+  });
+});
+
+describe("toFetchUrl", () => {
+  it("converts HackMD view URL to download URL", () => {
+    expect(toFetchUrl("https://hackmd.io/ykkXKEYKRpKoYo0E6iUj7g?both"))
+      .toBe("https://hackmd.io/ykkXKEYKRpKoYo0E6iUj7g/download");
+  });
+
+  it("converts HackMD URL without query string", () => {
+    expect(toFetchUrl("https://hackmd.io/ykkXKEYKRpKoYo0E6iUj7g"))
+      .toBe("https://hackmd.io/ykkXKEYKRpKoYo0E6iUj7g/download");
+  });
+
+  it("converts Riseup Etherpad URL to txt export", () => {
+    expect(toFetchUrl("https://pad.riseup.net/p/ALIvNYwJmo_llWuLsD2U-keep"))
+      .toBe("https://pad.riseup.net/p/ALIvNYwJmo_llWuLsD2U-keep/export/txt");
+  });
+
+  it("throws for unsupported URLs", () => {
+    expect(() => toFetchUrl("https://example.com/pad")).toThrow("Unsupported pad URL");
   });
 });
 
