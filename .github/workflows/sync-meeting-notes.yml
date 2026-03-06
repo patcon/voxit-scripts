@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun run scripts/sync-meeting-notes.js https://hackmd.io/ykkXKEYKRpKoYo0E6iUj7g
+      - run: bun run scripts/sync-meeting-notes.js
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add meetings/
+          git add meeting-notes/
           git diff --cached --quiet || git commit -m "chore: sync meeting notes" && git push

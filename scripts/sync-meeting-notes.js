@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
 export function toFetchUrl(url) {
@@ -23,8 +23,16 @@ export function parseDateFromTitle(line) {
   return `${year}-${month}-${day}`;
 }
 
-export function generateFilename(isoDate) {
-  return `${isoDate}-tech-wg.md`;
+export function generateFilename(isoDate, keyword) {
+  return `${isoDate}-${keyword}.md`;
+}
+
+export function parseSourcesCsv(csv) {
+  const [headerLine, ...rows] = csv.trim().split("\n");
+  const headers = headerLine.split(",");
+  return rows
+    .map(row => Object.fromEntries(row.split(",").map((v, i) => [headers[i], v.trim()])))
+    .filter(row => row.do_backup === "x");
 }
 
 export function normalizeIndents(text) {
@@ -41,27 +49,29 @@ export function redactStrikethrough(text, charsPerBlock = 5) {
 }
 
 if (import.meta.main) {
-  const padUrl = process.argv[2];
-  if (!padUrl) throw new Error("Usage: sync-meeting-notes.js <pad-url>");
-  const fetchUrl = toFetchUrl(padUrl);
-  const response = await fetch(fetchUrl);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch pad: ${response.status} ${response.statusText}`);
+  const csvPath = join(process.cwd(), "meeting-notes/sources.csv");
+  const sources = parseSourcesCsv(await readFile(csvPath, "utf8"));
+
+  for (const { resource_url, keyword } of sources) {
+    const fetchUrl = toFetchUrl(resource_url);
+    const response = await fetch(fetchUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${resource_url}: ${response.status} ${response.statusText}`);
+    }
+    const content = await response.text();
+
+    const firstLine = content.split("\n")[0].trim();
+    const isoDate = parseDateFromTitle(firstLine);
+    if (!isoDate) {
+      throw new Error(`Could not parse date from title line: ${JSON.stringify(firstLine)}`);
+    }
+
+    const outDir = join(process.cwd(), "meeting-notes", keyword);
+    await mkdir(outDir, { recursive: true });
+
+    const outPath = join(outDir, generateFilename(isoDate, keyword));
+    await writeFile(outPath, redactStrikethrough(normalizeIndents(content)), "utf8");
+
+    console.log(outPath);
   }
-  const content = await response.text();
-
-  const firstLine = content.split("\n")[0].trim();
-  const isoDate = parseDateFromTitle(firstLine);
-  if (!isoDate) {
-    throw new Error(`Could not parse date from title line: ${JSON.stringify(firstLine)}`);
-  }
-
-  const filename = generateFilename(isoDate);
-  const outDir = join(process.cwd(), "meetings");
-  await mkdir(outDir, { recursive: true });
-
-  const outPath = join(outDir, filename);
-  await writeFile(outPath, redactStrikethrough(normalizeIndents(content)), "utf8");
-
-  console.log(outPath);
 }

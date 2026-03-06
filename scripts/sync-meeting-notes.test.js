@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseDateFromTitle, generateFilename, redactStrikethrough, normalizeIndents, toFetchUrl } from "./sync-meeting-notes.js";
+import { parseDateFromTitle, generateFilename, redactStrikethrough, normalizeIndents, toFetchUrl, parseSourcesCsv } from "./sync-meeting-notes.js";
 
 describe("parseDateFromTitle", () => {
   it("extracts ISO date from a valid title", () => {
@@ -21,7 +21,24 @@ describe("parseDateFromTitle", () => {
 
 describe("generateFilename", () => {
   it("returns correctly formatted filename", () => {
-    expect(generateFilename("2026-03-06")).toBe("2026-03-06-tech-wg.md");
+    expect(generateFilename("2026-03-06", "tech-wg")).toBe("2026-03-06-tech-wg.md");
+  });
+});
+
+describe("parseSourcesCsv", () => {
+  const csv = `do_backup,resource_url,keyword,notes
+x,https://hackmd.io/abc,tech-wg,
+,https://hackmd.io/def,other,skipped
+x,https://hackmd.io/ghi,finance,some note`;
+
+  it("returns only rows with do_backup=x", () => {
+    expect(parseSourcesCsv(csv)).toHaveLength(2);
+  });
+
+  it("parses fields correctly", () => {
+    const rows = parseSourcesCsv(csv);
+    expect(rows[0]).toMatchObject({ resource_url: "https://hackmd.io/abc", keyword: "tech-wg" });
+    expect(rows[1]).toMatchObject({ resource_url: "https://hackmd.io/ghi", keyword: "finance" });
   });
 });
 
