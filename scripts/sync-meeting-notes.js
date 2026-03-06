@@ -16,6 +16,12 @@ export function generateFilename(isoDate) {
   return `${isoDate}-tech-wg.md`;
 }
 
+export function censorStrikethrough(text, charsPerBlock = 5) {
+  return text.replace(/~~([^~]+)~~/g, (_, inner) =>
+    "█".repeat(Math.ceil(inner.length / charsPerBlock))
+  );
+}
+
 if (import.meta.main) {
   const response = await fetch(PAD_URL);
   if (!response.ok) {
@@ -34,7 +40,7 @@ if (import.meta.main) {
   await mkdir(outDir, { recursive: true });
 
   const outPath = join(outDir, filename);
-  await writeFile(outPath, content, "utf8");
+  await writeFile(outPath, censorStrikethrough(content), "utf8");
 
   console.log(outPath);
 }

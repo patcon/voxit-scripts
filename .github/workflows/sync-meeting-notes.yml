@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron: '0 9 * * 1'   # weekly, Monday 9am UTC
+    - cron: '0 15 * * 5'   # weekly, Friday 10am EST (11am EDT)
   workflow_dispatch:
 
 jobs:
