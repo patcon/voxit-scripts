@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseDateFromTitle, generateFilename, censorStrikethrough, normalizeIndents } from "./sync-meeting-notes.js";
+import { parseDateFromTitle, generateFilename, redactStrikethrough, normalizeIndents } from "./sync-meeting-notes.js";
 
 describe("parseDateFromTitle", () => {
   it("extracts ISO date from a valid title", () => {
@@ -25,31 +25,31 @@ describe("generateFilename", () => {
   });
 });
 
-describe("censorStrikethrough", () => {
+describe("redactStrikethrough", () => {
   it("replaces strikethrough text with block characters (1 per 5 chars)", () => {
     // "hello" = 5 chars → 1 block; "secret" = 6 chars → 2 blocks
-    expect(censorStrikethrough("~~hello~~")).toBe("█");
-    expect(censorStrikethrough("~~secret~~")).toBe("██");
+    expect(redactStrikethrough("~~hello~~")).toBe("█");
+    expect(redactStrikethrough("~~secret~~")).toBe("██");
   });
 
   it("rounds up partial blocks", () => {
     // "abc" = 3 chars → ceil(3/5) = 1 block
-    expect(censorStrikethrough("~~abc~~")).toBe("█");
+    expect(redactStrikethrough("~~abc~~")).toBe("█");
     // "abcdef" = 6 chars → ceil(6/5) = 2 blocks
-    expect(censorStrikethrough("~~abcdef~~")).toBe("██");
+    expect(redactStrikethrough("~~abcdef~~")).toBe("██");
   });
 
   it("respects a custom charsPerBlock", () => {
     // "secret" = 6 chars, charsPerBlock=3 → ceil(6/3) = 2 blocks
-    expect(censorStrikethrough("~~secret~~", 3)).toBe("██");
+    expect(redactStrikethrough("~~secret~~", 3)).toBe("██");
   });
 
   it("handles multiple strikethrough sections", () => {
-    expect(censorStrikethrough("~~hi~~ and ~~bye~~")).toBe("█ and █");
+    expect(redactStrikethrough("~~hi~~ and ~~bye~~")).toBe("█ and █");
   });
 
   it("leaves text without strikethrough unchanged", () => {
-    expect(censorStrikethrough("nothing to censor")).toBe("nothing to censor");
+    expect(redactStrikethrough("nothing to censor")).toBe("nothing to censor");
   });
 });
 

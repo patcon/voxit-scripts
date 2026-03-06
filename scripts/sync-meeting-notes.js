@@ -23,7 +23,7 @@ export function normalizeIndents(text) {
     .join("\n");
 }
 
-export function censorStrikethrough(text, charsPerBlock = 5) {
+export function redactStrikethrough(text, charsPerBlock = 5) {
   return text.replace(/~~([^~]+)~~/g, (_, inner) =>
     "█".repeat(Math.ceil(inner.length / charsPerBlock))
   );
@@ -47,7 +47,7 @@ if (import.meta.main) {
   await mkdir(outDir, { recursive: true });
 
   const outPath = join(outDir, filename);
-  await writeFile(outPath, censorStrikethrough(normalizeIndents(content)), "utf8");
+  await writeFile(outPath, redactStrikethrough(normalizeIndents(content)), "utf8");
 
   console.log(outPath);
 }
