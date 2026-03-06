@@ -49,3 +49,4 @@ All helper functions are named exports for unit testing. The main block runs onl
 - Always `git pull --rebase` before pushing. The workflow autocommits to `main` on its schedule, so the remote will frequently be ahead.
 - Pad title must include a date in `YYYY/MM/DD` or `YYYY-MM-DD` format (anywhere in the first `#` heading) for the filename to be generated correctly.
 - To redact sensitive text in a pad, wrap it with `~~double tildes~~` (native Markdown strikethrough). The sync script replaces it with `█` blocks.
+- Update `CHANGELOG.md` for significant changes (new features, fixes, notable behaviour changes). Merge small related changes into a single entry rather than listing every commit.
