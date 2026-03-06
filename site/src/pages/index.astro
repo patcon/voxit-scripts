@@ -1,0 +1,53 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MeetingCard from '../components/MeetingCard.astro';
+import { getAllGroups, getMeetingsForGroup, getAllMeetings, formatGroupName } from '../lib/meetingNotes.js';
+
+const groups = getAllGroups();
+const allMeetings = getAllMeetings();
+const recentMeetings = allMeetings.slice(0, 10);
+
+const groupStats = groups.map(group => {
+  const meetings = getMeetingsForGroup(group);
+  return { group, count: meetings.length, lastDate: meetings[0]?.date };
+});
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<Layout title="Home">
+  <div class="space-y-10">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Voxit Meeting Notes</h1>
+      <p class="mt-2 text-gray-600">Public archive of Voxit working group meetings.</p>
+    </div>
+
+    <section>
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Working Groups</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {groupStats.map(({ group, count, lastDate }) => (
+          <a
+            href={`${base}${group}/`}
+            class="block bg-white rounded-lg border border-gray-200 p-5 hover:border-teal-400 hover:shadow-sm transition"
+          >
+            <div class="font-semibold text-teal-700">{formatGroupName(group)}</div>
+            <div class="text-sm text-gray-500 mt-1">
+              {count} meeting{count !== 1 ? 's' : ''}
+              {lastDate && <span> &middot; Last: {lastDate}</span>}
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Meetings</h2>
+      <div class="space-y-4">
+        {recentMeetings.map(meeting => (
+          <MeetingCard meeting={meeting} />
+        ))}
+        {recentMeetings.length === 0 && (
+          <p class="text-gray-500">No meetings yet.</p>
+        )}
+      </div>
+    </section>
+  </div>
+</Layout>

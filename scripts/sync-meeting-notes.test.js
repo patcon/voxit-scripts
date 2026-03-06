@@ -10,8 +10,12 @@ describe("parseDateFromTitle", () => {
     expect(parseDateFromTitle("# Meeting Notes")).toBeNull();
   });
 
-  it("returns null for a malformed date", () => {
-    expect(parseDateFromTitle("# Meeting - 2026-03-06")).toBeNull();
+  it("extracts ISO date when date uses dashes", () => {
+    expect(parseDateFromTitle("# Meeting - 2026-03-06")).toBe("2026-03-06");
+  });
+
+  it("extracts ISO date when date appears at start of title", () => {
+    expect(parseDateFromTitle("# 2026-03-04 General WG")).toBe("2026-03-04");
   });
 
   it("returns null for an empty string", () => {

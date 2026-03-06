@@ -16,8 +16,8 @@ export function toFetchUrl(url) {
 }
 
 export function parseDateFromTitle(line) {
-  // Matches: # Some Title - 2026/03/06
-  const match = line.match(/(\d{4})\/(\d{2})\/(\d{2})\s*$/);
+  // Matches: # Some Title - 2026/03/06  or  # 2026-03-04 Some Title
+  const match = line.match(/(\d{4})[\/\-](\d{2})[\/\-](\d{2})/);
   if (!match) return null;
   const [, year, month, day] = match;
   return `${year}-${month}-${day}`;
@@ -60,8 +60,8 @@ if (import.meta.main) {
     }
     const content = await response.text();
 
-    const firstLine = content.split("\n")[0].trim();
-    const isoDate = parseDateFromTitle(firstLine);
+    const titleLine = content.split("\n").find(l => l.trim().startsWith("#")) || "";
+    const isoDate = parseDateFromTitle(titleLine);
     if (!isoDate) {
       throw new Error(`Could not parse date from title line: ${JSON.stringify(firstLine)}`);
     }
