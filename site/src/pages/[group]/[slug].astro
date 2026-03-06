@@ -45,7 +45,7 @@ const html = !isPrivate ? marked.parse(content) : '';
       <div class="space-y-5">
         {hasRedaction && <RedactionBanner url={privateRepoUrl} />}
         <article
-          class="bg-white rounded-lg border border-gray-200 p-6 prose prose-teal max-w-none"
+          class="bg-white rounded-lg border border-gray-200 p-6 prose prose-teal max-w-none [overflow-wrap:anywhere]"
           set:html={html}
         />
       </div>
