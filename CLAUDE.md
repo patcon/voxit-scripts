@@ -33,5 +33,6 @@ All helper functions are named exports for unit testing. The main block runs onl
 ## Conventions
 
 - Work directly on `main` — no PRs needed for this repo.
+- Always `git pull --rebase` before pushing. The workflow autocommits to `main` on its schedule, so the remote will frequently be ahead.
 - Pad title must include a date in `YYYY/MM/DD` format for the filename to be generated correctly.
 - To redact sensitive text in a pad, wrap it with `~~double tildes~~` (native Markdown strikethrough). The sync script replaces it with `█` blocks.
