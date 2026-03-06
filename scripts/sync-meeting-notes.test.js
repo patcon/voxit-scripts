@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseDateFromTitle, generateFilename, censorStrikethrough } from "./sync-meeting-notes.js";
+import { parseDateFromTitle, generateFilename, censorStrikethrough, normalizeIndents } from "./sync-meeting-notes.js";
 
 describe("parseDateFromTitle", () => {
   it("extracts ISO date from a valid title", () => {
@@ -50,5 +50,25 @@ describe("censorStrikethrough", () => {
 
   it("leaves text without strikethrough unchanged", () => {
     expect(censorStrikethrough("nothing to censor")).toBe("nothing to censor");
+  });
+});
+
+describe("normalizeIndents", () => {
+  it("converts leading tabs to 2-space indents", () => {
+    expect(normalizeIndents("\t* bullet")).toBe("  * bullet");
+  });
+
+  it("handles nested tabs", () => {
+    expect(normalizeIndents("\t\t* nested")).toBe("    * nested");
+  });
+
+  it("leaves non-indented lines unchanged", () => {
+    expect(normalizeIndents("## Heading")).toBe("## Heading");
+  });
+
+  it("processes multi-line text", () => {
+    expect(normalizeIndents("## Section\n\t* item\n\t\t* nested")).toBe(
+      "## Section\n  * item\n    * nested"
+    );
   });
 });
