@@ -17,4 +17,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add meeting-notes/
-          git diff --cached --quiet || git commit -m "chore: sync meeting notes" && git push
+          if git diff --cached --quiet; then
+            echo "## Sync result" >> $GITHUB_STEP_SUMMARY
+            echo "No changes — meeting notes are already up to date." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Sync result" >> $GITHUB_STEP_SUMMARY
+            echo "The following files were created or updated:" >> $GITHUB_STEP_SUMMARY
+            git diff --cached --name-status | while read status file; do
+              case $status in
+                A) label="🆕 created" ;;
+                M) label="✏️ updated" ;;
+                *) label="$status" ;;
+              esac
+              echo "- \`$file\` ($label)" >> $GITHUB_STEP_SUMMARY
+            done
+            git commit -m "chore: sync meeting notes" && git push
+          fi
